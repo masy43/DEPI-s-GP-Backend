@@ -19,6 +19,8 @@ model Customer {
   
   cart           Cart?
   orders         Order[]
+  skin_profile   Skin_Profile?
+  survey_responses Survey_Response[]
 
   @@map("customers")
 }
@@ -140,4 +142,57 @@ model Payment {
   order            Order    @relation(fields: [order_id], references: [order_id], onDelete: Cascade)
 
   @@map("payments")
+}
+
+model Skin_Profile {
+  profile_id        Int       @id @default(autoincrement())
+  customer_id       Int       @unique
+  skin_type         String    @db.VarChar(50)
+  concerns          String[]  @db.Text
+  sensitivity_level String    @db.VarChar(50)
+  climate           String    @db.VarChar(50)
+  created_at        DateTime  @default(now()) @db.Timestamptz()
+  updated_at        DateTime  @updatedAt @db.Timestamptz()
+
+  customer          Customer  @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
+
+  @@map("skin_profiles")
+}
+
+model Survey {
+  survey_id   Int               @id @default(autoincrement())
+  title       String            @db.VarChar(200)
+  is_active   Boolean           @default(false)
+  created_at  DateTime          @default(now()) @db.Timestamptz()
+
+  questions   Survey_Question[]
+
+  @@map("surveys")
+}
+
+model Survey_Question {
+  question_id   Int               @id @default(autoincrement())
+  survey_id     Int
+  question_text String            @db.Text
+  question_type String            @db.VarChar(50)
+  options       String[]          @db.Text
+  mapping_key   String?           @db.VarChar(50)
+
+  survey        Survey            @relation(fields: [survey_id], references: [survey_id], onDelete: Cascade)
+  responses     Survey_Response[]
+
+  @@map("survey_questions")
+}
+
+model Survey_Response {
+  response_id   Int               @id @default(autoincrement())
+  customer_id   Int
+  question_id   Int
+  answer_value  String            @db.Text
+  created_at    DateTime          @default(now()) @db.Timestamptz()
+
+  customer      Customer          @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
+  question      Survey_Question   @relation(fields: [question_id], references: [question_id], onDelete: Cascade)
+
+  @@map("survey_responses")
 }
