@@ -36,7 +36,32 @@ model Product {
   category_id  Int
   manager_id   Int?
 
-  category Category @relation(fields: [category_id], references: [category_id])
+  category     Category           @relation(fields: [category_id], references: [category_id])
+  variants     Product_Variant[]
+  images       Product_Images[]
 
   @@map("products")
+}
+
+model Product_Variant {
+  variant_id   Int      @id @default(autoincrement())
+  product_id   Int
+  size         String   @db.VarChar(50)
+  price        Decimal  @db.Decimal(10, 2)
+  stock        Int      @default(0)
+
+  product      Product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+  @@map("product_variants")
+}
+
+model Product_Images {
+  image_id     Int      @id @default(autoincrement())
+  product_id   Int
+  image_url    String   @db.Text
+  is_primary   Boolean  @default(false)
+
+  product      Product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+  @@map("product_images")
 }

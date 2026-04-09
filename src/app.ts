@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import prisma from "./config/prisma";
 import authRoutes from "./routes/authRoutes";
+import productRoutes from "./routes/productRoutes";
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(helmet());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api", productRoutes);
 
 app.get("/api/health", async (_req, res) => {
   try {
