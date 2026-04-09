@@ -11,6 +11,7 @@ import surveyRoutes from "./routes/surveyRoutes";
 import recommendationRoutes from "./routes/recommendationRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
+import shippingRoutes from "./routes/shippingRoutes";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api", productRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", reviewRoutes);
+app.use("/api", shippingRoutes);
 
 app.get("/api/health", async (_req, res) => {
   try {
