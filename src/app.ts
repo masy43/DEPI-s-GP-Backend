@@ -8,6 +8,7 @@ import cartRoutes from "./routes/cartRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import surveyRoutes from "./routes/surveyRoutes";
+import recommendationRoutes from "./routes/recommendationRoutes";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/survey", surveyRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 app.use("/api", productRoutes);
 app.use("/api", orderRoutes);
 
