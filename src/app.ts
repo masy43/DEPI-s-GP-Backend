@@ -5,6 +5,7 @@ import prisma from "./config/prisma";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import cartRoutes from "./routes/cartRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api", productRoutes);
+app.use("/api", orderRoutes);
 
 app.get("/api/health", async (_req, res) => {
   try {
