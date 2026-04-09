@@ -16,6 +16,8 @@ model Customer {
   phone          String?  @db.VarChar(20)
   loyalty_points Int      @default(0)
   created_at     DateTime @default(now()) @db.Timestamptz()
+  
+  cart           Cart?
 
   @@map("customers")
 }
@@ -51,6 +53,7 @@ model Product_Variant {
   stock        Int      @default(0)
 
   product      Product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  cart_items   Cart_Item[]
 
   @@map("product_variants")
 }
@@ -64,4 +67,30 @@ model Product_Images {
   product      Product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
 
   @@map("product_images")
+}
+
+model Cart {
+  cart_id     Int         @id @default(autoincrement())
+  customer_id Int         @unique
+  created_at  DateTime    @default(now()) @db.Timestamptz()
+  updated_at  DateTime    @updatedAt @db.Timestamptz()
+
+  customer    Customer    @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
+  items       Cart_Item[]
+
+  @@map("carts")
+}
+
+model Cart_Item {
+  cart_item_id Int             @id @default(autoincrement())
+  cart_id      Int
+  variant_id   Int
+  quantity     Int             @default(1)
+  added_at     DateTime        @default(now()) @db.Timestamptz()
+
+  cart         Cart            @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade)
+  variant      Product_Variant @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade)
+
+  @@unique([cart_id, variant_id])
+  @@map("cart_items")
 }
