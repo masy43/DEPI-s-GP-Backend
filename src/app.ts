@@ -12,6 +12,7 @@ import recommendationRoutes from "./routes/recommendationRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 import shippingRoutes from "./routes/shippingRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/survey", surveyRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.use("/api", productRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", reviewRoutes);
