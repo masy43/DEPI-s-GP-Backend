@@ -1,0 +1,30 @@
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import prisma from "./config/prisma.js";
+
+const app = express();
+
+app.use(cors());
+app.use(helmet());
+app.use(express.json());
+
+app.get("/api/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: "OK",
+      db: "connected",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.log("[health] db check failed:", err);
+    res.status(500).json({
+      status: "ERROR",
+      db: "disconnected",
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+export default app;
