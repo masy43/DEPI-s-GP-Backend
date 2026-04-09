@@ -112,7 +112,7 @@ export const addItemToCart = async (req: Request, res: Response) => {
 export const updateCartItem = async (req: Request, res: Response) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
-    const cartItemId = parseInt(req.params.cartItemId);
+    const cartItemId = parseInt(req.params.cartItemId as string);
     const { quantity } = req.body;
 
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -151,7 +151,7 @@ export const updateCartItem = async (req: Request, res: Response) => {
 export const removeCartItem = async (req: Request, res: Response) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
-    const cartItemId = parseInt(req.params.cartItemId);
+    const cartItemId = parseInt(req.params.cartItemId as string);
 
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
     if (isNaN(cartItemId)) return res.status(400).json({ error: "Invalid cart item ID" });
