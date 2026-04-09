@@ -6,6 +6,8 @@ import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import cartRoutes from "./routes/cartRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import profileRoutes from "./routes/profileRoutes";
+import surveyRoutes from "./routes/surveyRoutes";
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/survey", surveyRoutes);
 app.use("/api", productRoutes);
 app.use("/api", orderRoutes);
 
