@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 export interface AuthPayload {
-  customerId: number;
+  customerId?: number;
+  adminId?: number;
   email: string;
-  role: "customer";
+  role: string;
 }
 
 export interface AuthRequest extends Request {
@@ -36,4 +37,14 @@ export const authenticateToken = (
     res.status(401).json({ error: "Invalid or expired token." });
     return;
   }
+};
+
+export const authorizeRoles = (...roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403).json({ error: "Forbidden. Insufficient permissions." });
+      return;
+    }
+    next();
+  };
 };
