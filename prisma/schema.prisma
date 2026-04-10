@@ -71,13 +71,12 @@ model Product_Variant {
   product_id   Int
   size         String?  @db.VarChar(50)
   price        Decimal  @db.Decimal(10, 2)
-  stock_qty    Int      @default(0)           // ←改了
+  stock        Int      @default(0) @map("stock_qty")
   low_stock_threshold Int @default(10)
 
   product      Product       @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
   cart_items   Cart_Item[]
   order_items  Order_Item[]
-  product_ingredients Product_Ingredient[]
 
   @@map("product_variants")
 }
