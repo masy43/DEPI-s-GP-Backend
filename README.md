@@ -1,4 +1,4 @@
-# 💄 LUMIÈRE Backend API
+# Backend API Documentation
 
 A production-ready REST API for the LUMIÈRE skincare e-commerce platform — handling everything from customer auth and shopping to AI-assisted skin recommendations, Stripe payments, and delivery tracking.
 
@@ -373,8 +373,4 @@ feat: add wishlist endpoint
 4. Push and open a PR on GitHub
 5. After merge: delete the remote branch, then pull `main` locally and delete the local branch
 
----
 
-## 📄 License
-
-MIT © LUMIÈRE Team — DEPI Graduation Project 2026
