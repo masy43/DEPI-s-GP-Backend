@@ -24,28 +24,17 @@ export const createOrder = async (req: Request, res: Response) => {
     let subtotal = 0;
     for (const item of cart.items) {
       if (item.variant.stock < item.quantity) {
-        return res.status(400).json({ error: `Not enough stock for variant ${item.variant_id}` });
+        return res.status(400).json({ error: `Not enough stock for variant ${item.variant_id}. Available: ${item.variant.stock}` });
       }
       subtotal += Number(item.variant.price) * item.quantity;
     }
 
     const shipping = 50.00;
-    const tax = subtotal * 0.14; 
+    const tax = subtotal * 0.14;
     const total = subtotal + shipping + tax;
 
-    let paymentIntent;
-    try {
-      paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(total * 100),
-        currency: "usd",
-        metadata: { customerId: customerId.toString() }
-      });
-    } catch (stripeErr) {
-      console.log("[order] Stripe error:", stripeErr);
-      return res.status(500).json({ error: "Failed to communicate with Stripe" });
-    }
-
-    const result = await prisma.$transaction(async (tx) => {
+    // Run DB work first — create order, atomically decrement stock (race-safe), clear cart
+    const newOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
           customer_id: customerId,
@@ -66,35 +55,64 @@ export const createOrder = async (req: Request, res: Response) => {
           }
         });
 
-        await tx.product_Variant.update({
-          where: { variant_id: item.variant_id },
+        // Atomic decrement with a guard — prevents stock going negative under concurrency
+        const updated = await tx.product_Variant.updateMany({
+          where: {
+            variant_id: item.variant_id,
+            stock: { gte: item.quantity }
+          },
           data: { stock: { decrement: item.quantity } }
         });
+
+        if (updated.count === 0) {
+          throw new Error(`Stock for variant ${item.variant_id} was depleted by a concurrent order.`);
+        }
       }
 
-      await tx.payment.create({
-        data: {
-          order_id: order.order_id,
-          stripe_intent_id: paymentIntent.id,
-          amount: total
-        }
-      });
-
-      await tx.cart_Item.deleteMany({
-        where: { cart_id: cart.cart_id }
-      });
+      await tx.cart_Item.deleteMany({ where: { cart_id: cart.cart_id } });
 
       return order;
     });
 
-    res.status(201).json({
-      message: "Order created successfully",
-      order: result,
-      stripe_client_secret: paymentIntent.client_secret,
-      order_ref: result.order_ref
+    // Only call Stripe after a successful DB commit
+    let paymentIntent;
+    try {
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(total * 100),
+        currency: "usd",
+        metadata: { customerId: customerId.toString(), orderId: newOrder.order_id.toString() }
+      });
+    } catch (stripeErr) {
+      console.log("[order] Stripe error — order created but no payment intent:", stripeErr);
+      // Order exists in DB without a Payment record yet. Client can retry payment separately.
+      return res.status(202).json({
+        message: "Order placed but payment setup failed. Please retry payment.",
+        order: newOrder,
+        stripe_client_secret: null,
+        order_ref: newOrder.order_ref
+      });
+    }
+
+    // Now attach the payment record to the committed order
+    await prisma.payment.create({
+      data: {
+        order_id: newOrder.order_id,
+        stripe_intent_id: paymentIntent.id,
+        amount: total
+      }
     });
 
-  } catch (err) {
+    res.status(201).json({
+      message: "Order created successfully",
+      order: newOrder,
+      stripe_client_secret: paymentIntent.client_secret,
+      order_ref: newOrder.order_ref
+    });
+
+  } catch (err: any) {
+    if (err.message?.includes("depleted by a concurrent order")) {
+      return res.status(409).json({ error: err.message });
+    }
     console.log("[order] createOrder error:", err);
     res.status(500).json({ error: "Failed to create order" });
   }

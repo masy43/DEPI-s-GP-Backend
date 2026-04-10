@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { AddressSchema } from "../utils/schemas";
 
 export const getAddresses = async (req: Request, res: Response) => {
   try {
@@ -24,11 +25,11 @@ export const addAddress = async (req: Request, res: Response) => {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
 
-    const { street_address, city, state, zip_code, country, phone, is_default } = req.body;
-
-    if (!street_address || !city || !state || !zip_code || !country) {
-      return res.status(400).json({ error: "Street, city, state, zip code, and country are required." });
+    const parsed = AddressSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { street_address, city, state, zip_code, country, phone, is_default } = parsed.data;
 
     const currentAddressesCount = await prisma.address.count({
       where: { customer_id: customerId },

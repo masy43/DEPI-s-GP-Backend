@@ -1,6 +1,8 @@
-import express from "express";
+// Express 5 natively propagates async errors to error handlers — no extra package needed.
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
 import prisma from "./config/prisma";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
@@ -21,7 +23,18 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-app.use("/api/auth", authRoutes);
+// Rate limit sensitive auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many attempts. Please try again in 15 minutes." },
+});
+
+app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/admin/login", authLimiter);
+
 app.use("/api/cart", cartRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/survey", surveyRoutes);
@@ -50,6 +63,12 @@ app.get("/api/health", async (_req, res) => {
       timestamp: new Date().toISOString(),
     });
   }
+});
+
+// Express 5 catches async errors natively — this handles anything that slips through
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error("[global error handler]", err.message);
+  res.status(500).json({ error: err.message || "Internal server error" });
 });
 
 export default app;
