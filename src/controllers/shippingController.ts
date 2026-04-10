@@ -1,28 +1,26 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { ShipOrderSchema, DeliveryUpdateSchema } from "../utils/schemas";
 
 export const shipOrder = async (req: Request, res: Response) => {
   try {
     const orderId = parseInt(req.params.id as string);
     if (isNaN(orderId)) return res.status(400).json({ error: "Invalid order ID" });
 
-    const { partner_id, tracking_number } = req.body;
-
-    if (!partner_id || !tracking_number) {
-      return res.status(400).json({ error: "partner_id and tracking_number are required" });
+    const parsed = ShipOrderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { partner_id, tracking_number } = parsed.data;
 
     const order = await prisma.order.findUnique({ where: { order_id: orderId } });
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ error: "Order not found" });
 
-    if (order.status === "shipped" || order.status === "delivered" || order.status === "cancelled") {
+    if (["shipped", "delivered", "cancelled"].includes(order.status)) {
       return res.status(400).json({ error: `Cannot ship order with status: ${order.status}` });
     }
 
-    // Estimate delivery in 3 days
     const estDelivery = new Date();
     estDelivery.setDate(estDelivery.getDate() + 3);
 
@@ -35,7 +33,7 @@ export const shipOrder = async (req: Request, res: Response) => {
       const ship = await tx.ship.create({
         data: {
           order_id: orderId,
-          partner_id: parseInt(partner_id),
+          partner_id,
           tracking_num: tracking_number,
           est_delivery: estDelivery
         }
@@ -68,9 +66,7 @@ export const getOrderTracking = async (req: Request, res: Response) => {
       }
     });
 
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ error: "Order not found" });
 
     if (customerId && order.customer_id !== customerId) {
       return res.status(403).json({ error: "Forbidden. This is not your order." });
@@ -101,19 +97,26 @@ export const getOrderTracking = async (req: Request, res: Response) => {
 
 export const updateDeliveryStatus = async (req: Request, res: Response) => {
   try {
+    // Verify webhook shared secret
+    const webhookSecret = process.env.DELIVERY_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const incomingSecret = req.headers["x-delivery-secret"];
+      if (incomingSecret !== webhookSecret) {
+        return res.status(401).json({ error: "Invalid webhook secret" });
+      }
+    }
+
     const shipId = parseInt(req.params.shipId as string);
     if (isNaN(shipId)) return res.status(400).json({ error: "Invalid ship ID" });
 
-    const { status, notes } = req.body;
-
-    if (status !== "out_for_delivery" && status !== "delivered") {
-      return res.status(400).json({ error: "Invalid status" });
+    const parsed = DeliveryUpdateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { status, notes } = parsed.data;
 
     const ship = await prisma.ship.findUnique({ where: { ship_id: shipId } });
-    if (!ship) {
-      return res.status(404).json({ error: "Shipment not found" });
-    }
+    if (!ship) return res.status(404).json({ error: "Shipment not found" });
 
     const result = await prisma.$transaction(async (tx) => {
       const delivery = await tx.delivery.upsert({

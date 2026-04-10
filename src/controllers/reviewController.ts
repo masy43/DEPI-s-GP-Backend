@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { CreateReviewSchema } from "../utils/schemas";
 
 export const createReview = async (req: Request, res: Response) => {
   try {
@@ -10,11 +11,11 @@ export const createReview = async (req: Request, res: Response) => {
     const productId = parseInt(req.params.id as string);
     if (isNaN(productId)) return res.status(400).json({ error: "Invalid product ID" });
 
-    const { rating, comment } = req.body;
-
-    if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ error: "Rating must be between 1 and 5" });
+    const parsed = CreateReviewSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { rating, comment } = parsed.data;
 
     // Check if user purchased this product
     const hasPurchased = await prisma.order_Item.findFirst({

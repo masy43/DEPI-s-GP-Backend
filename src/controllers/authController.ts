@@ -2,40 +2,23 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prisma";
+import { RegisterSchema, LoginSchema } from "../utils/schemas";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-fallback-secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("[authController] JWT_SECRET environment variable is not set.");
 const SALT_ROUNDS = 12;
-
-const isValidEmail = (email: string) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, first_name, last_name, phone } = req.body;
-
-    if (!email || !password || !first_name || !last_name) {
-      res
-        .status(400)
-        .json({ error: "email, password, first_name, and last_name are required." });
-      return;
+    const parsed = RegisterSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { email, password, first_name, last_name, phone } = parsed.data;
 
-    if (!isValidEmail(email)) {
-      res.status(400).json({ error: "Invalid email format." });
-      return;
-    }
-
-    if (password.length < 8) {
-      res.status(400).json({ error: "Password must be at least 8 characters." });
-      return;
-    }
-
-    const existingCustomer = await prisma.customer.findUnique({
-      where: { email },
-    });
+    const existingCustomer = await prisma.customer.findUnique({ where: { email } });
     if (existingCustomer) {
-      res.status(409).json({ error: "Email already exists." });
-      return;
+      return res.status(409).json({ error: "Email already exists." });
     }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -69,23 +52,20 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: "Email and password are required." });
-      return;
+    const parsed = LoginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { email, password } = parsed.data;
 
     const customer = await prisma.customer.findUnique({ where: { email } });
     if (!customer) {
-      res.status(401).json({ error: "Invalid credentials." });
-      return;
+      return res.status(401).json({ error: "Invalid credentials." });
     }
 
     const passwordMatch = await bcrypt.compare(password, customer.password_hash);
     if (!passwordMatch) {
-      res.status(401).json({ error: "Invalid credentials." });
-      return;
+      return res.status(401).json({ error: "Invalid credentials." });
     }
 
     const token = jwt.sign(

@@ -135,6 +135,8 @@ model Order {
   ship          Ship?
   delivery      Delivery?
 
+  @@index([customer_id])
+  @@index([status])
   @@map("orders")
 }
 
@@ -266,6 +268,7 @@ model Review {
   product      Product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
 
   @@unique([customer_id, product_id])
+  @@index([product_id])
   @@map("reviews")
 }
 
@@ -323,5 +326,6 @@ model Address {
 
   customer       Customer @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
 
+  @@index([customer_id])
   @@map("addresses")
 }

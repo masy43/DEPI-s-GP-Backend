@@ -12,7 +12,8 @@ export interface AuthRequest extends Request {
   user?: AuthPayload;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-fallback-secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("[authMiddleware] JWT_SECRET environment variable is not set.");
 
 export const authenticateToken = (
   req: AuthRequest,

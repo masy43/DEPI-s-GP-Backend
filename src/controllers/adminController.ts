@@ -3,17 +3,19 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { AdminProductSchema } from "../utils/schemas";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-fallback-secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("[adminController] JWT_SECRET environment variable is not set.");
 const SALT_ROUNDS = 12;
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { product_name, description, category_id, variants, images } = req.body;
-
-    if (!product_name || !category_id) {
-      return res.status(400).json({ error: "product_name and category_id are required" });
+    const parsed = AdminProductSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { product_name, description, category_id, variants, images } = parsed.data;
 
     const managerId = (req as AuthRequest).user?.adminId || null;
 
@@ -24,16 +26,16 @@ export const createProduct = async (req: Request, res: Response) => {
         category_id,
         manager_id: managerId,
         variants: variants?.length ? {
-          create: variants.map((v: any) => ({
+          create: variants.map((v) => ({
             size: v.size,
             price: v.price,
-            stock: v.stock || 0
+            stock: v.stock ?? 0
           }))
         } : undefined,
         images: images?.length ? {
-          create: images.map((img: any) => ({
+          create: images.map((img) => ({
             image_url: img.image_url,
-            is_primary: img.is_primary || false
+            is_primary: img.is_primary ?? false
           }))
         } : undefined,
       },
@@ -94,8 +96,8 @@ export const updateVariantStock = async (req: Request, res: Response) => {
     if (isNaN(variantId)) return res.status(400).json({ error: "Invalid variant ID" });
 
     const { stock } = req.body;
-    if (stock === undefined || stock < 0) {
-      return res.status(400).json({ error: "Valid stock value (>= 0) is required" });
+    if (stock === undefined || typeof stock !== "number" || !Number.isInteger(stock) || stock < 0) {
+      return res.status(400).json({ error: "stock must be a non-negative integer" });
     }
 
     const variant = await prisma.product_Variant.update({
