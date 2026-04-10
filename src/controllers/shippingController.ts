@@ -25,7 +25,7 @@ export const shipOrder: RequestHandler = async (req, res) => {
     const estDelivery = new Date();
     estDelivery.setDate(estDelivery.getDate() + 3);
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const updatedOrder = await tx.order.update({
         where: { order_id: orderId },
         data: { status: "shipped" }
@@ -119,7 +119,7 @@ export const updateDeliveryStatus: RequestHandler = async (req, res) => {
     const ship = await prisma.ship.findUnique({ where: { ship_id: shipId } });
     if (!ship) return res.status(404).json({ error: "Shipment not found" });
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       const delivery = await tx.delivery.upsert({
         where: { ship_id: shipId },
         update: {

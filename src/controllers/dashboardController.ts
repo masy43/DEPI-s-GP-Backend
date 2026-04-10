@@ -30,13 +30,13 @@ export const getAdminDashboard = async (_req: Request, res: Response) => {
       take: 5,
     });
 
-    const variantIds = topItems.map((item) => item.variant_id);
+    const variantIds = topItems.map((item: any) => item.variant_id);
     const variants = await prisma.product_Variant.findMany({
       where: { variant_id: { in: variantIds } },
       include: { product: true },
     });
 
-    const top5Products = topItems.map((item) => {
+    const top5Products = topItems.map((item: any) => {
       const variant = variants.find((v) => v.variant_id === item.variant_id);
       return {
         variant_id: item.variant_id,

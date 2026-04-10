@@ -42,7 +42,7 @@ export const addAddress: RequestHandler = async (req, res) => {
 
     const setAsDefault = is_default === true || currentAddressesCount === 0;
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       if (setAsDefault) {
         await tx.address.updateMany({
           where: { customer_id: customerId, is_default: true },
@@ -89,7 +89,7 @@ export const updateAddress: RequestHandler = async (req, res) => {
       return res.status(404).json({ error: "Address not found" });
     }
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       if (is_default === true) {
         await tx.address.updateMany({
           where: { customer_id: customerId, is_default: true },
@@ -134,7 +134,7 @@ export const deleteAddress: RequestHandler = async (req, res) => {
       return res.status(404).json({ error: "Address not found" });
     }
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       await tx.address.delete({
         where: { address_id: addressId },
       });

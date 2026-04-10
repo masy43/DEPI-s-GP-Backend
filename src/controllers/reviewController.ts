@@ -73,7 +73,7 @@ export const getProductReviews: RequestHandler = async (req, res) => {
 
     const reviewsCount = reviews.length;
     const avgRating = reviewsCount > 0
-      ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviewsCount) * 10) / 10
+      ? Math.round((reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewsCount) * 10) / 10
       : 0;
 
     res.json({

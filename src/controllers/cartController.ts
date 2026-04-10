@@ -33,7 +33,7 @@ export const getCart: RequestHandler = async (req, res) => {
     });
 
     let subtotal = 0;
-    const formattedItems = cartItems.map((item) => {
+    const formattedItems = cartItems.map((item: any) => {
       const itemTotal = Number(item.variant.price) * item.quantity;
       subtotal += itemTotal;
       return {

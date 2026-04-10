@@ -35,7 +35,7 @@ export const createOrder: RequestHandler = async (req, res) => {
     const total = subtotal + shipping + tax;
 
     // Run DB work first — create order, atomically decrement stock (race-safe), clear cart
-    const newOrder = await prisma.$transaction(async (tx) => {
+    const newOrder = await prisma.$transaction(async (tx: any) => {
       const order = await tx.order.create({
         data: {
           customer_id: customerId,

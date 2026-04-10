@@ -33,7 +33,7 @@ export const submitSurvey: RequestHandler = async (req, res) => {
       return res.status(400).json({ error: "Answers array is required" });
     }
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       // 1. Process and save answers
       for (const ans of answers) {
         if (!ans.question_id || !ans.answer_value) continue;

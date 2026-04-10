@@ -35,7 +35,7 @@ export const confirmPayment: RequestHandler = async (req, res) => {
       orderStatus = 'cancelled';
     }
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       await tx.payment.update({
         where: { payment_id: paymentRecord.payment_id },
         data: { status }
