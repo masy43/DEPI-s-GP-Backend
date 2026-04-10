@@ -1,5 +1,5 @@
 import prisma from "../config/prisma";
-import { Product, Product_Variant, Product_Images, Product_Ingredient, Ingredient } from "../../generated/prisma/client";
+import { Product, Product_Variant, Product_Images, Product_Ingredient, Ingredient } from "@prisma/client";
 
 interface SkinProfile {
   skin_type: string;

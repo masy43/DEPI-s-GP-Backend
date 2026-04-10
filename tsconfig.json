@@ -9,6 +9,7 @@
     "sourceMap": true,
     "declaration": true,
     "strict": true,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
