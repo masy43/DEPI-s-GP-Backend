@@ -18,6 +18,7 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import addressRoutes from "./routes/addressRoutes";
 
 const app = express();
+app.set("trust proxy", 1); // Trust the reverse proxy to get correct Client IP
 
 app.use(cors());
 app.use(helmet());

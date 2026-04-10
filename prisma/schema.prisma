@@ -96,7 +96,6 @@ model Cart {
   cart_id     Int         @id @default(autoincrement())
   customer_id Int         @unique
   created_at  DateTime    @default(now()) @db.Timestamptz()
-  updated_at  DateTime    @updatedAt @db.Timestamptz()
 
   customer    Customer    @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
   items       Cart_Item[]
@@ -124,11 +123,10 @@ model Order {
   order_ref     String    @unique @default(uuid()) @db.Uuid
   status        String    @default("pending") @db.VarChar(50)
   subtotal      Decimal   @db.Decimal(10, 2)
-  tax           Decimal   @db.Decimal(10, 2)
-  shipping      Decimal   @db.Decimal(10, 2)
-  total         Decimal   @db.Decimal(10, 2)
+  tax           Decimal   @map("tax_amount") @db.Decimal(10, 2)
+  shipping      Decimal   @map("shipping_cost") @db.Decimal(10, 2)
+  total         Decimal   @map("total_amount") @db.Decimal(10, 2)
   created_at    DateTime  @default(now()) @db.Timestamptz()
-  updated_at    DateTime  @updatedAt @db.Timestamptz()
 
   customer      Customer     @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
   items         Order_Item[]
