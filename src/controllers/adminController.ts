@@ -1,3 +1,4 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -9,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("[adminController] JWT_SECRET environment variable is not set.");
 const SALT_ROUNDS = 12;
 
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct: RequestHandler = async (req, res) => {
   try {
     const parsed = AdminProductSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -42,7 +43,7 @@ export const createProduct = async (req: Request, res: Response) => {
       include: { variants: true, images: true, category: true }
     });
 
-    res.status(201).json({ message: "Product created", data: product });
+    res.status(200).json({ message: "Product created", data: product });
   } catch (err: any) {
     if (err.code === "P2002") return res.status(409).json({ error: "Duplicate entry" });
     console.log("[admin] createProduct error:", err);
@@ -50,7 +51,7 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct: RequestHandler = async (req, res) => {
   try {
     const productId = parseInt(req.params.id as string);
     if (isNaN(productId)) return res.status(400).json({ error: "Invalid product ID" });
@@ -75,7 +76,7 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct: RequestHandler = async (req, res) => {
   try {
     const productId = parseInt(req.params.id as string);
     if (isNaN(productId)) return res.status(400).json({ error: "Invalid product ID" });
@@ -90,7 +91,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const updateVariantStock = async (req: Request, res: Response) => {
+export const updateVariantStock: RequestHandler = async (req, res) => {
   try {
     const variantId = parseInt(req.params.id as string);
     if (isNaN(variantId)) return res.status(400).json({ error: "Invalid variant ID" });
@@ -113,7 +114,7 @@ export const updateVariantStock = async (req: Request, res: Response) => {
   }
 };
 
-export const getAdminOrders = async (req: Request, res: Response) => {
+export const getAdminOrders: RequestHandler = async (req, res) => {
   try {
     const status = req.query.status as string;
     const page = parseInt(req.query.page as string) || 1;
@@ -148,7 +149,7 @@ export const getAdminOrders = async (req: Request, res: Response) => {
   }
 };
 
-export const adminLogin = async (req: Request, res: Response) => {
+export const adminLogin: RequestHandler = async (req, res) => {
   try {
     const { email, password } = req.body;
 

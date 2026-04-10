@@ -1,3 +1,4 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
@@ -60,7 +61,7 @@ export const getAdminDashboard = async (_req: Request, res: Response) => {
   }
 };
 
-export const getCustomerDashboard = async (req: Request, res: Response) => {
+export const getCustomerDashboard: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });

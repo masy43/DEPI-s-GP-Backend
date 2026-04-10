@@ -1,9 +1,10 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { generateRecommendations, findSimilarProducts } from "../services/recommendationService";
 
-export const getProfileRecommendations = async (req: Request, res: Response) => {
+export const getProfileRecommendations: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -25,7 +26,7 @@ export const getProfileRecommendations = async (req: Request, res: Response) => 
   }
 };
 
-export const getSimilarProducts = async (req: Request, res: Response) => {
+export const getSimilarProducts: RequestHandler = async (req, res) => {
   try {
     const productId = parseInt(req.params.productId as string);
     if (isNaN(productId)) return res.status(400).json({ error: "Invalid product ID" });

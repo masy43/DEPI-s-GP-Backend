@@ -6,6 +6,6 @@ if (!stripeSecretKey) {
   throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
 }
 
-export const stripe = new Stripe(stripeSecretKey, {
+export const stripe: Stripe.Stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16' as any,
 });

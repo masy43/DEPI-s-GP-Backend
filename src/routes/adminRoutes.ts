@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, RequestHandler } from "express";
 import {
   createProduct, updateProduct, deleteProduct,
   updateVariantStock, getAdminOrders, adminLogin
@@ -7,14 +7,14 @@ import { authenticateToken, authorizeRoles } from "../middleware/authMiddleware"
 
 const router = Router();
 
-router.post("/login", adminLogin as any);
+router.post("/login", adminLogin as RequestHandler);
 
-router.use(authenticateToken as any, authorizeRoles("admin", "product_manager") as any);
+router.use(authenticateToken as RequestHandler, authorizeRoles("admin", "product_manager") as RequestHandler);
 
-router.post("/products", createProduct as any);
-router.put("/products/:id", updateProduct as any);
-router.delete("/products/:id", deleteProduct as any);
-router.put("/variants/:id/stock", updateVariantStock as any);
-router.get("/orders", getAdminOrders as any);
+router.post("/products", createProduct as RequestHandler);
+router.put("/products/:id", updateProduct as RequestHandler);
+router.delete("/products/:id", deleteProduct as RequestHandler);
+router.put("/variants/:id/stock", updateVariantStock as RequestHandler);
+router.get("/orders", getAdminOrders as RequestHandler);
 
 export default router;

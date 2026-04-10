@@ -1,3 +1,4 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
@@ -10,7 +11,7 @@ const getOrCreateCart = async (customerId: number) => {
   return cart;
 };
 
-export const getCart = async (req: Request, res: Response) => {
+export const getCart: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -58,7 +59,7 @@ export const getCart = async (req: Request, res: Response) => {
   }
 };
 
-export const addItemToCart = async (req: Request, res: Response) => {
+export const addItemToCart: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -101,7 +102,7 @@ export const addItemToCart = async (req: Request, res: Response) => {
       const newItem = await prisma.cart_Item.create({
         data: { cart_id: cart.cart_id, variant_id, quantity: newQuantity }
       });
-      return res.status(201).json({ message: "Item added to cart", data: newItem });
+      return res.status(200).json({ message: "Item added to cart", data: newItem });
     }
   } catch (err) {
     console.log("[cart] addItemToCart error:", err);
@@ -109,7 +110,7 @@ export const addItemToCart = async (req: Request, res: Response) => {
   }
 };
 
-export const updateCartItem = async (req: Request, res: Response) => {
+export const updateCartItem: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     const cartItemId = parseInt(req.params.cartItemId as string);
@@ -148,7 +149,7 @@ export const updateCartItem = async (req: Request, res: Response) => {
   }
 };
 
-export const removeCartItem = async (req: Request, res: Response) => {
+export const removeCartItem: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     const cartItemId = parseInt(req.params.cartItemId as string);

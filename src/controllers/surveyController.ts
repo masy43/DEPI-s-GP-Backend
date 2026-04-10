@@ -1,8 +1,9 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 
-export const getActiveSurvey = async (req: Request, res: Response) => {
+export const getActiveSurvey: RequestHandler = async (req, res) => {
   try {
     const survey = await prisma.survey.findFirst({
       where: { is_active: true },
@@ -22,7 +23,7 @@ export const getActiveSurvey = async (req: Request, res: Response) => {
   }
 };
 
-export const submitSurvey = async (req: Request, res: Response) => {
+export const submitSurvey: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -84,7 +85,7 @@ export const submitSurvey = async (req: Request, res: Response) => {
       }
     });
 
-    res.status(201).json({ message: "Survey submitted successfully" });
+    res.status(200).json({ message: "Survey submitted successfully" });
   } catch (err) {
     console.log("[survey] submitSurvey error:", err);
     res.status(500).json({ error: "Failed to submit survey responses" });

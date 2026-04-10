@@ -1,9 +1,10 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { stripe } from "../config/stripe";
 
-export const createOrder = async (req: Request, res: Response) => {
+export const createOrder: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -76,20 +77,24 @@ export const createOrder = async (req: Request, res: Response) => {
 
     // Only call Stripe after a successful DB commit
     let paymentIntent;
+    const amountInCents = Math.round(Number(total.toString()) * 100);
+    console.log("Creating Payment Intent with amount:", amountInCents);
+
     try {
       paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(total * 100),
+        amount: amountInCents,
         currency: "usd",
         metadata: { customerId: customerId.toString(), orderId: newOrder.order_id.toString() }
       });
-    } catch (stripeErr) {
-      console.log("[order] Stripe error — order created but no payment intent:", stripeErr);
+    } catch (stripeErr: any) {
+      console.error("[order] Stripe API error:", stripeErr.message || stripeErr);
       // Order exists in DB without a Payment record yet. Client can retry payment separately.
       return res.status(202).json({
         message: "Order placed but payment setup failed. Please retry payment.",
         order: newOrder,
         stripe_client_secret: null,
-        order_ref: newOrder.order_ref
+        order_ref: newOrder.order_ref,
+        stripe_error: stripeErr.message || "Unknown Stripe error"
       });
     }
 
@@ -102,7 +107,7 @@ export const createOrder = async (req: Request, res: Response) => {
       }
     });
 
-    res.status(201).json({
+    res.status(200).json({
       message: "Order created successfully",
       order: newOrder,
       stripe_client_secret: paymentIntent.client_secret,
@@ -118,7 +123,7 @@ export const createOrder = async (req: Request, res: Response) => {
   }
 };
 
-export const getOrders = async (req: Request, res: Response) => {
+export const getOrders: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -138,7 +143,7 @@ export const getOrders = async (req: Request, res: Response) => {
   }
 };
 
-export const getOrderById = async (req: Request, res: Response) => {
+export const getOrderById: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });

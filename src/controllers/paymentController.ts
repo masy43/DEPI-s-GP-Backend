@@ -1,8 +1,9 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { stripe } from "../config/stripe";
 
-export const confirmPayment = async (req: Request, res: Response) => {
+export const confirmPayment: RequestHandler = async (req, res) => {
   try {
     const { payment_intent_id } = req.body;
     if (!payment_intent_id) {
