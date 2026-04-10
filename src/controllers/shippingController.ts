@@ -1,9 +1,10 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { ShipOrderSchema, DeliveryUpdateSchema } from "../utils/schemas";
 
-export const shipOrder = async (req: Request, res: Response) => {
+export const shipOrder: RequestHandler = async (req, res) => {
   try {
     const orderId = parseInt(req.params.id as string);
     if (isNaN(orderId)) return res.status(400).json({ error: "Invalid order ID" });
@@ -52,7 +53,7 @@ export const shipOrder = async (req: Request, res: Response) => {
   }
 };
 
-export const getOrderTracking = async (req: Request, res: Response) => {
+export const getOrderTracking: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     const orderId = parseInt(req.params.id as string);
@@ -95,7 +96,7 @@ export const getOrderTracking = async (req: Request, res: Response) => {
   }
 };
 
-export const updateDeliveryStatus = async (req: Request, res: Response) => {
+export const updateDeliveryStatus: RequestHandler = async (req, res) => {
   try {
     // Verify webhook shared secret
     const webhookSecret = process.env.DELIVERY_WEBHOOK_SECRET;

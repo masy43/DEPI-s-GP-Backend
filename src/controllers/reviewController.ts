@@ -1,9 +1,10 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { CreateReviewSchema } from "../utils/schemas";
 
-export const createReview = async (req: Request, res: Response) => {
+export const createReview: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -50,14 +51,14 @@ export const createReview = async (req: Request, res: Response) => {
       }
     });
 
-    res.status(201).json({ message: "Review submitted", data: review });
+    res.status(200).json({ message: "Review submitted", data: review });
   } catch (err) {
     console.log("[reviews] createReview error:", err);
     res.status(500).json({ error: "Failed to submit review" });
   }
 };
 
-export const getProductReviews = async (req: Request, res: Response) => {
+export const getProductReviews: RequestHandler = async (req, res) => {
   try {
     const productId = parseInt(req.params.id as string);
     if (isNaN(productId)) return res.status(400).json({ error: "Invalid product ID" });
@@ -85,7 +86,7 @@ export const getProductReviews = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteReview = async (req: Request, res: Response) => {
+export const deleteReview: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });

@@ -1,14 +1,15 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prisma";
-import { RegisterSchema, LoginSchema } from "../utils/schemas";
+import { RegisterSchema, LoginSchema, AdminRegisterSchema } from "../utils/schemas";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("[authController] JWT_SECRET environment variable is not set.");
 const SALT_ROUNDS = 12;
 
-export const register = async (req: Request, res: Response) => {
+export const register: RequestHandler = async (req, res) => {
   try {
     const parsed = RegisterSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -35,7 +36,7 @@ export const register = async (req: Request, res: Response) => {
 
     console.log(`[auth] registered: ${customer.email}`);
 
-    res.status(201).json({
+    res.status(200).json({
       message: "Account created successfully.",
       customer: {
         customer_id: customer.customer_id,
@@ -50,7 +51,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login: RequestHandler = async (req, res) => {
   try {
     const parsed = LoginSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -93,5 +94,45 @@ export const login = async (req: Request, res: Response) => {
   } catch (err) {
     console.log("[auth] login error:", err);
     res.status(500).json({ error: "Something went wrong during login." });
+  }
+};
+
+export const registerAdmin: RequestHandler = async (req, res) => {
+  try {
+    const parsed = AdminRegisterSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
+    }
+    const { email, password, first_name, last_name } = parsed.data;
+
+    const existingAdmin = await prisma.admin.findUnique({ where: { email } });
+    if (existingAdmin) {
+      return res.status(409).json({ error: "Email already exists." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const admin = await prisma.admin.create({
+      data: {
+        email,
+        password_hash: hashedPassword,
+        first_name,
+        last_name,
+        role: "admin",
+      },
+    });
+
+    console.log(`[auth] admin registered: ${admin.email}`);
+
+    res.status(200).json({
+      admin_id: admin.admin_id,
+      email: admin.email,
+      first_name: admin.first_name,
+      last_name: admin.last_name,
+      role: admin.role,
+    });
+  } catch (err) {
+    console.log("[auth] admin register error:", err);
+    res.status(500).json({ error: "Something went wrong during admin registration." });
   }
 };

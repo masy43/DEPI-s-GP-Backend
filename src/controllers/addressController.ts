@@ -1,9 +1,10 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { AddressSchema } from "../utils/schemas";
 
-export const getAddresses = async (req: Request, res: Response) => {
+export const getAddresses: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -20,7 +21,7 @@ export const getAddresses = async (req: Request, res: Response) => {
   }
 };
 
-export const addAddress = async (req: Request, res: Response) => {
+export const addAddress: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -63,14 +64,14 @@ export const addAddress = async (req: Request, res: Response) => {
       });
     });
 
-    res.status(201).json({ message: "Address added successfully", data: result });
+    res.status(200).json({ message: "Address added successfully", data: result });
   } catch (err) {
     console.log("[address] addAddress error:", err);
     res.status(500).json({ error: "Failed to add address" });
   }
 };
 
-export const updateAddress = async (req: Request, res: Response) => {
+export const updateAddress: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
@@ -117,7 +118,7 @@ export const updateAddress = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteAddress = async (req: Request, res: Response) => {
+export const deleteAddress: RequestHandler = async (req, res) => {
   try {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });

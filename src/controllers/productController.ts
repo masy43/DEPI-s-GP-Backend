@@ -1,7 +1,8 @@
+import { RequestHandler } from "express";
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 
-export const getProducts = async (req: Request, res: Response) => {
+export const getProducts: RequestHandler = async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 12;
@@ -56,7 +57,7 @@ export const getProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const getProductById = async (req: Request, res: Response) => {
+export const getProductById: RequestHandler = async (req, res) => {
   try {
     const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
@@ -85,7 +86,7 @@ export const getProductById = async (req: Request, res: Response) => {
   }
 };
 
-export const getCategories = async (req: Request, res: Response) => {
+export const getCategories: RequestHandler = async (req, res) => {
   try {
     const categories = await prisma.category.findMany();
     res.json({ data: categories });

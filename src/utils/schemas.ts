@@ -8,6 +8,13 @@ export const RegisterSchema = z.object({
   phone: z.string().optional(),
 });
 
+export const AdminRegisterSchema = z.object({
+  email: z.string().email("Must be a valid email"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+});
+
 export const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1, "Password is required"),
