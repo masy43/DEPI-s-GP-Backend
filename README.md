@@ -201,7 +201,9 @@ PORT=3000
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
 | POST | `/api/auth/register` | Register new customer | ❌ |
+| POST | `/api/auth/admin/register` | Register new admin | ❌ |
 | POST | `/api/auth/login` | Customer login → JWT | ❌ |
+| GET | `/api/auth/me` | Get logged-in customer info | ✅ Customer |
 | POST | `/api/admin/login` | Admin/PM login → JWT | ❌ |
 
 ### Products
@@ -214,9 +216,9 @@ PORT=3000
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
 | GET | `/api/cart` | Get customer's cart | ✅ Customer |
-| POST | `/api/cart` | Add item to cart | ✅ Customer |
-| PUT | `/api/cart/:cartItemId` | Update cart item quantity | ✅ Customer |
-| DELETE | `/api/cart/:cartItemId` | Remove item from cart | ✅ Customer |
+| POST | `/api/cart/items` | Add item to cart | ✅ Customer |
+| PUT | `/api/cart/items/:cartItemId` | Update cart item quantity | ✅ Customer |
+| DELETE | `/api/cart/items/:cartItemId` | Remove item from cart | ✅ Customer |
 
 ### Orders
 | Method | Endpoint | Description | Auth |
@@ -225,15 +227,16 @@ PORT=3000
 | GET | `/api/orders` | List customer's orders | ✅ Customer |
 | GET | `/api/orders/:id` | Get order details | ✅ Customer |
 | GET | `/api/orders/:id/tracking` | Track order shipping status | ✅ Customer |
+| POST | `/api/payments/confirm` | Webhook confirming Stripe payment | ❌ |
 
 ### Skin Profile & Recommendations
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
 | GET | `/api/profile` | Get skin profile | ✅ Customer |
-| PUT | `/api/profile` | Update skin profile | ✅ Customer |
-| GET | `/api/survey` | Get active survey questions | ✅ Customer |
-| POST | `/api/survey/respond` | Submit survey answers | ✅ Customer |
-| GET | `/api/profile/recommendations` | Get personalized product recommendations | ✅ Customer |
+| PUT | `/api/profile/skin` | Update skin profile | ✅ Customer |
+| GET | `/api/survey/active` | Get active survey questions | ✅ Customer |
+| POST | `/api/survey/submit` | Submit survey answers | ✅ Customer |
+| GET | `/api/recommendations/profile` | Get personalized product recommendations | ✅ Customer |
 | GET | `/api/recommendations/:productId/similar` | Get similar products by ingredients | ❌ |
 
 ### Reviews
@@ -301,7 +304,7 @@ $headers = @{ Authorization = "Bearer $token" }
 
 ```powershell
 # Add to cart (replace variant_id with real value)
-Invoke-RestMethod -Uri http://localhost:3000/api/cart -Method POST `
+Invoke-RestMethod -Uri http://localhost:3000/api/cart/items -Method POST `
   -Headers $headers -ContentType "application/json" `
   -Body '{"variant_id":1,"quantity":2}'
 
