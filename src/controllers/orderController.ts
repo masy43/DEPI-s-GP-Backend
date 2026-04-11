@@ -52,7 +52,7 @@ export const createOrder: RequestHandler = async (req, res) => {
             order_id: order.order_id,
             variant_id: item.variant_id,
             quantity: item.quantity,
-            price: item.variant.price
+            price_at_purchase: item.variant.price
           }
         });
 
