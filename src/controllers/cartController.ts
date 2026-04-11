@@ -6,6 +6,11 @@ import { AuthRequest } from "../middleware/authMiddleware";
 const getOrCreateCart = async (customerId: number) => {
   let cart = await prisma.cart.findUnique({ where: { customer_id: customerId } });
   if (!cart) {
+    // Prevent P2003 foreign key violation if token is stale and customer is deleted
+    const customer = await prisma.customer.findUnique({ where: { customer_id: customerId } });
+    if (!customer) {
+      throw new Error(`Customer with ID ${customerId} not found in the database. Please re-login.`);
+    }
     cart = await prisma.cart.create({ data: { customer_id: customerId } });
   }
   return cart;
