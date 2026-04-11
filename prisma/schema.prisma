@@ -54,7 +54,6 @@ model Product {
   product_name String   @db.VarChar(200)
   description  String?  @db.Text
   category_id  Int
-  manager_id   Int?
 
   category     Category           @relation(fields: [category_id], references: [category_id])
   variants     Product_Variant[]
