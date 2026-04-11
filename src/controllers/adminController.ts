@@ -25,7 +25,6 @@ export const createProduct: RequestHandler = async (req, res) => {
         product_name,
         description: description || null,
         category_id,
-        manager_id: managerId,
         variants: variants?.length ? {
           create: variants.map((v) => ({
             size: v.size,
