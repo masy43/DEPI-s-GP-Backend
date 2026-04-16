@@ -48,6 +48,7 @@ export const getCart: RequestHandler = async (req, res) => {
         price: item.variant.price,
         item_total: itemTotal,
         variant_size: item.variant.size,
+        stock: item.variant.stock,
         product_name: item.variant.product.product_name,
         primary_image: item.variant.product.images[0]?.image_url || null
       };
