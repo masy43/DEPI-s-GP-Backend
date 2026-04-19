@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { AddToCartSchema } from "../utils/schemas";
 
 const getOrCreateCart = async (customerId: number) => {
   let cart = await prisma.cart.findUnique({ where: { customer_id: customerId } });
@@ -60,7 +60,7 @@ export const getCart: RequestHandler = async (req, res) => {
       items: formattedItems
     });
   } catch (err) {
-    console.log("[cart] getCart error:", err);
+    console.error("[cart] getCart error:", err);
     res.status(500).json({ error: "Failed to fetch cart" });
   }
 };
@@ -70,17 +70,16 @@ export const addItemToCart: RequestHandler = async (req, res) => {
     const customerId = (req as AuthRequest).user?.customerId;
     if (!customerId) return res.status(401).json({ error: "Unauthorized" });
 
-    const { variant_id, quantity } = req.body;
-    const parsedQuantity = parseInt(quantity);
-
-    if (!variant_id || isNaN(parsedQuantity) || parsedQuantity < 1) {
-      return res.status(400).json({ error: "Valid variant_id and quantity >= 1 are required" });
+    const parsed = AddToCartSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten().fieldErrors });
     }
+    const { variant_id, quantity } = parsed.data;
 
     const variant = await prisma.product_Variant.findUnique({ where: { variant_id } });
     if (!variant) return res.status(404).json({ error: "Variant not found" });
 
-    if (variant.stock < parsedQuantity) {
+    if (variant.stock < quantity) {
       return res.status(400).json({ error: `Not enough stock. Available: ${variant.stock}` });
     }
 
@@ -92,7 +91,7 @@ export const addItemToCart: RequestHandler = async (req, res) => {
       }
     });
 
-    let newQuantity = parsedQuantity;
+    let newQuantity = quantity;
     if (existingItem) {
       newQuantity += existingItem.quantity;
       if (variant.stock < newQuantity) {
@@ -108,10 +107,10 @@ export const addItemToCart: RequestHandler = async (req, res) => {
       const newItem = await prisma.cart_Item.create({
         data: { cart_id: cart.cart_id, variant_id, quantity: newQuantity }
       });
-      return res.status(200).json({ message: "Item added to cart", data: newItem });
+      return res.status(201).json({ message: "Item added to cart", data: newItem });
     }
   } catch (err) {
-    console.log("[cart] addItemToCart error:", err);
+    console.error("[cart] addItemToCart error:", err);
     res.status(500).json({ error: "Failed to add item to cart" });
   }
 };
@@ -150,7 +149,7 @@ export const updateCartItem: RequestHandler = async (req, res) => {
 
     res.json({ message: "Cart item updated", data: updatedItem });
   } catch (err) {
-    console.log("[cart] updateCartItem error:", err);
+    console.error("[cart] updateCartItem error:", err);
     res.status(500).json({ error: "Failed to update cart item" });
   }
 };
@@ -176,7 +175,7 @@ export const removeCartItem: RequestHandler = async (req, res) => {
 
     res.json({ message: "Cart item removed" });
   } catch (err) {
-    console.log("[cart] removeCartItem error:", err);
+    console.error("[cart] removeCartItem error:", err);
     res.status(500).json({ error: "Failed to remove cart item" });
   }
 };

@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { stripe } from "../config/stripe";
 
@@ -50,7 +49,7 @@ export const confirmPayment: RequestHandler = async (req, res) => {
     res.json({ message: "Payment status updated", data: { payment_status: status, order_status: orderStatus } });
 
   } catch (err) {
-    console.log("[payment] confirmPayment error:", err);
+    console.error("[payment] confirmPayment error:", err);
     res.status(500).json({ error: "Failed to confirm payment" });
   }
 };

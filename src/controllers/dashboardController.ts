@@ -56,7 +56,7 @@ export const getAdminDashboard = async (_req: Request, res: Response) => {
       },
     });
   } catch (err) {
-    console.log("[dashboard] getAdminDashboard error:", err);
+    console.error("[dashboard] getAdminDashboard error:", err);
     res.status(500).json({ error: "Failed to fetch admin dashboard stats" });
   }
 };
@@ -99,7 +99,7 @@ export const getCustomerDashboard: RequestHandler = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log("[dashboard] getCustomerDashboard error:", err);
+    console.error("[dashboard] getCustomerDashboard error:", err);
     res.status(500).json({ error: "Failed to fetch customer dashboard stats" });
   }
 };

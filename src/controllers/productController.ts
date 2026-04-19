@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 
 export const getProducts: RequestHandler = async (req, res) => {
@@ -52,7 +51,7 @@ export const getProducts: RequestHandler = async (req, res) => {
       data: products,
     });
   } catch (err) {
-    console.log("[products] getProducts error:", err);
+    console.error("[products] getProducts error:", err);
     res.status(500).json({ error: "Failed to fetch products" });
   }
 };
@@ -81,7 +80,7 @@ export const getProductById: RequestHandler = async (req, res) => {
 
     res.json({ data: product });
   } catch (err) {
-    console.log("[products] getProductById error:", err);
+    console.error("[products] getProductById error:", err);
     res.status(500).json({ error: "Failed to fetch product" });
   }
 };
@@ -91,7 +90,7 @@ export const getCategories: RequestHandler = async (req, res) => {
     const categories = await prisma.category.findMany();
     res.json({ data: categories });
   } catch (err) {
-    console.log("[categories] getCategories error:", err);
+    console.error("[categories] getCategories error:", err);
     res.status(500).json({ error: "Failed to fetch categories" });
   }
 };

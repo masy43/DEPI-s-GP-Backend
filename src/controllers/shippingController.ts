@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { ShipOrderSchema, DeliveryUpdateSchema } from "../utils/schemas";
@@ -25,7 +24,7 @@ export const shipOrder: RequestHandler = async (req, res) => {
     const estDelivery = new Date();
     estDelivery.setDate(estDelivery.getDate() + 3);
 
-    const result = await prisma.$transaction(async (tx: any) => {
+    const result = await prisma.$transaction(async (tx) => {
       const updatedOrder = await tx.order.update({
         where: { order_id: orderId },
         data: { status: "shipped" }
@@ -48,7 +47,7 @@ export const shipOrder: RequestHandler = async (req, res) => {
     if (err.code === "P2002") {
       return res.status(400).json({ error: "Tracking number already exists or order already shipped" });
     }
-    console.log("[shipping] shipOrder error:", err);
+    console.error("[shipping] shipOrder error:", err);
     res.status(500).json({ error: "Failed to ship order" });
   }
 };
@@ -91,7 +90,7 @@ export const getOrderTracking: RequestHandler = async (req, res) => {
     });
 
   } catch (err) {
-    console.log("[shipping] getOrderTracking error:", err);
+    console.error("[shipping] getOrderTracking error:", err);
     res.status(500).json({ error: "Failed to fetch tracking details" });
   }
 };
@@ -119,7 +118,7 @@ export const updateDeliveryStatus: RequestHandler = async (req, res) => {
     const ship = await prisma.ship.findUnique({ where: { ship_id: shipId } });
     if (!ship) return res.status(404).json({ error: "Shipment not found" });
 
-    const result = await prisma.$transaction(async (tx: any) => {
+    const result = await prisma.$transaction(async (tx) => {
       const delivery = await tx.delivery.upsert({
         where: { ship_id: shipId },
         update: {
@@ -137,10 +136,20 @@ export const updateDeliveryStatus: RequestHandler = async (req, res) => {
       });
 
       if (status === "delivered") {
-        await tx.order.update({
+        // Update order status
+        const order = await tx.order.update({
           where: { order_id: ship.order_id },
-          data: { status: "delivered" }
+          data: { status: "delivered" },
         });
+
+        // Award loyalty points: 1 point per whole dollar of order total
+        const pointsToAward = Math.floor(Number(order.total));
+        if (pointsToAward > 0) {
+          await tx.customer.update({
+            where: { customer_id: order.customer_id },
+            data: { loyalty_points: { increment: pointsToAward } },
+          });
+        }
       }
 
       return delivery;
@@ -148,7 +157,7 @@ export const updateDeliveryStatus: RequestHandler = async (req, res) => {
 
     res.json({ message: "Delivery updated", data: result });
   } catch (err) {
-    console.log("[shipping] updateDeliveryStatus error:", err);
+    console.error("[shipping] updateDeliveryStatus error:", err);
     res.status(500).json({ error: "Failed to update delivery" });
   }
 };

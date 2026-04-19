@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { stripe } from "../config/stripe";
@@ -78,7 +77,6 @@ export const createOrder: RequestHandler = async (req, res) => {
     // Only call Stripe after a successful DB commit
     let paymentIntent;
     const amountInCents = Math.round(Number(total.toString()) * 100);
-    console.log("Creating Payment Intent with amount:", amountInCents);
 
     try {
       paymentIntent = await stripe.paymentIntents.create({
@@ -118,7 +116,7 @@ export const createOrder: RequestHandler = async (req, res) => {
     if (err.message?.includes("depleted by a concurrent order")) {
       return res.status(409).json({ error: err.message });
     }
-    console.log("[order] createOrder error:", err);
+    console.error("[order] createOrder error:", err);
     res.status(500).json({ error: "Failed to create order" });
   }
 };
@@ -138,7 +136,7 @@ export const getOrders: RequestHandler = async (req, res) => {
 
     res.json({ data: orders });
   } catch (err) {
-    console.log("[order] getOrders error:", err);
+    console.error("[order] getOrders error:", err);
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 };
@@ -167,7 +165,7 @@ export const getOrderById: RequestHandler = async (req, res) => {
 
     res.json({ data: order });
   } catch (err) {
-    console.log("[order] getOrderById error:", err);
+    console.error("[order] getOrderById error:", err);
     res.status(500).json({ error: "Failed to fetch order details" });
   }
 };

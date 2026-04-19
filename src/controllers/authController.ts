@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../config/prisma";
@@ -34,8 +33,6 @@ export const register: RequestHandler = async (req, res) => {
       },
     });
 
-    console.log(`[auth] registered: ${customer.email}`);
-
     res.status(200).json({
       message: "Account created successfully.",
       customer: {
@@ -46,7 +43,7 @@ export const register: RequestHandler = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log("[auth] register error:", err);
+    console.error("[auth] register error:", err);
     res.status(500).json({ error: "Something went wrong during registration." });
   }
 };
@@ -79,8 +76,6 @@ export const login: RequestHandler = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    console.log(`[auth] login: ${customer.email}`);
-
     res.json({
       message: "Login successful.",
       token,
@@ -92,7 +87,7 @@ export const login: RequestHandler = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log("[auth] login error:", err);
+    console.error("[auth] login error:", err);
     res.status(500).json({ error: "Something went wrong during login." });
   }
 };
@@ -122,8 +117,6 @@ export const registerAdmin: RequestHandler = async (req, res) => {
       },
     });
 
-    console.log(`[auth] admin registered: ${admin.email}`);
-
     res.status(200).json({
       admin_id: admin.admin_id,
       email: admin.email,
@@ -132,7 +125,7 @@ export const registerAdmin: RequestHandler = async (req, res) => {
       role: admin.role,
     });
   } catch (err) {
-    console.log("[auth] admin register error:", err);
+    console.error("[auth] admin register error:", err);
     res.status(500).json({ error: "Something went wrong during admin registration." });
   }
 };

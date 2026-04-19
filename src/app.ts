@@ -16,11 +16,21 @@ import reviewRoutes from "./routes/reviewRoutes";
 import shippingRoutes from "./routes/shippingRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import addressRoutes from "./routes/addressRoutes";
+import webhookRoutes from "./routes/webhookRoutes";
 
 const app = express();
 app.set("trust proxy", 1); // Trust the reverse proxy to get correct Client IP
 
-app.use(cors());
+// ── IMPORTANT: Webhook route must be registered BEFORE express.json() ─────────
+// Stripe signature verification requires the raw, unparsed request body.
+app.use("/api/webhooks", webhookRoutes);
+
+// ── Global middleware ──────────────────────────────────────────────────────────
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : "*";
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(helmet());
 app.use(express.json());
 
@@ -57,7 +67,7 @@ app.get("/api/health", async (_req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    console.log("[health] db check failed:", err);
+    console.error("[health] db check failed:", err);
     res.status(500).json({
       status: "ERROR",
       db: "disconnected",

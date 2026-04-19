@@ -66,3 +66,50 @@ export const AdminProductSchema = z.object({
     is_primary: z.boolean().optional(),
   })).optional(),
 });
+
+
+export const UpdateProductSchema = z.object({
+  product_name: z.string().min(1).optional(),
+  description: z.string().optional(),
+  category_id: z.number().int().positive().optional(),
+});
+
+export const CategorySchema = z.object({
+  category_name: z.string().min(1, "category_name is required"),
+  description: z.string().optional(),
+});
+
+export const AddImagesSchema = z.object({
+  images: z.array(z.object({
+    image_url: z.string().url("Must be a valid URL"),
+    is_primary: z.boolean().optional(),
+  })).min(1, "At least one image is required"),
+});
+
+export const AddVariantsSchema = z.object({
+  variants: z.array(z.object({
+    size: z.string().optional(),
+    price: z.number().positive("price must be positive"),
+    stock: z.number().int().min(0).optional(),
+  })).min(1, "At least one variant is required"),
+});
+
+export const UpdateVariantSchema = z.object({
+  size: z.string().optional(),
+  price: z.number().positive().optional(),
+});
+
+export const UpdateOrderStatusSchema = z.object({
+  status: z.enum(["pending", "paid", "shipped", "delivered", "cancelled"]),
+});
+
+export const UpdateProfileSchema = z.object({
+  first_name: z.string().min(1, "First name cannot be empty").optional(),
+  last_name: z.string().min(1, "Last name cannot be empty").optional(),
+  phone: z.string().nullable().optional(),
+});
+
+export const ChangePasswordSchema = z.object({
+  current_password: z.string().min(1, "Current password is required"),
+  new_password: z.string().min(8, "New password must be at least 8 characters"),
+});

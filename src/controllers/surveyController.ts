@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 
@@ -18,7 +17,7 @@ export const getActiveSurvey: RequestHandler = async (req, res) => {
 
     res.json({ data: survey });
   } catch (err) {
-    console.log("[survey] getActiveSurvey error:", err);
+    console.error("[survey] getActiveSurvey error:", err);
     res.status(500).json({ error: "Failed to fetch active survey" });
   }
 };
@@ -87,7 +86,7 @@ export const submitSurvey: RequestHandler = async (req, res) => {
 
     res.status(200).json({ message: "Survey submitted successfully" });
   } catch (err) {
-    console.log("[survey] submitSurvey error:", err);
+    console.error("[survey] submitSurvey error:", err);
     res.status(500).json({ error: "Failed to submit survey responses" });
   }
 };

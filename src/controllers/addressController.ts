@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { AddressSchema } from "../utils/schemas";
@@ -16,7 +15,7 @@ export const getAddresses: RequestHandler = async (req, res) => {
 
     res.json({ data: addresses });
   } catch (err) {
-    console.log("[address] getAddresses error:", err);
+    console.error("[address] getAddresses error:", err);
     res.status(500).json({ error: "Failed to fetch addresses" });
   }
 };
@@ -66,7 +65,7 @@ export const addAddress: RequestHandler = async (req, res) => {
 
     res.status(200).json({ message: "Address added successfully", data: result });
   } catch (err) {
-    console.log("[address] addAddress error:", err);
+    console.error("[address] addAddress error:", err);
     res.status(500).json({ error: "Failed to add address" });
   }
 };
@@ -113,7 +112,7 @@ export const updateAddress: RequestHandler = async (req, res) => {
 
     res.json({ message: "Address updated successfully", data: result });
   } catch (err) {
-    console.log("[address] updateAddress error:", err);
+    console.error("[address] updateAddress error:", err);
     res.status(500).json({ error: "Failed to update address" });
   }
 };
@@ -156,7 +155,7 @@ export const deleteAddress: RequestHandler = async (req, res) => {
 
     res.json({ message: "Address deleted successfully" });
   } catch (err) {
-    console.log("[address] deleteAddress error:", err);
+    console.error("[address] deleteAddress error:", err);
     res.status(500).json({ error: "Failed to delete address" });
   }
 };

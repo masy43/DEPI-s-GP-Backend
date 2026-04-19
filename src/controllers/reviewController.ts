@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { CreateReviewSchema } from "../utils/schemas";
@@ -53,7 +52,7 @@ export const createReview: RequestHandler = async (req, res) => {
 
     res.status(200).json({ message: "Review submitted", data: review });
   } catch (err) {
-    console.log("[reviews] createReview error:", err);
+    console.error("[reviews] createReview error:", err);
     res.status(500).json({ error: "Failed to submit review" });
   }
 };
@@ -81,7 +80,7 @@ export const getProductReviews: RequestHandler = async (req, res) => {
       data: reviews
     });
   } catch (err) {
-    console.log("[reviews] getProductReviews error:", err);
+    console.error("[reviews] getProductReviews error:", err);
     res.status(500).json({ error: "Failed to fetch reviews" });
   }
 };
@@ -104,7 +103,7 @@ export const deleteReview: RequestHandler = async (req, res) => {
 
     res.json({ message: "Review deleted" });
   } catch (err) {
-    console.log("[reviews] deleteReview error:", err);
+    console.error("[reviews] deleteReview error:", err);
     res.status(500).json({ error: "Failed to delete review" });
   }
 };
