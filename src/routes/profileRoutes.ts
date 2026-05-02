@@ -14,6 +14,8 @@ const router = Router();
 router.use(authenticateToken as RequestHandler);
 
 // General user profile
+router.get("/", getMyProfile as RequestHandler);
+router.put("/", updateMyProfile as RequestHandler);
 router.get("/me", getMyProfile as RequestHandler);
 router.put("/me", updateMyProfile as RequestHandler);
 router.put("/change-password", changePassword as RequestHandler);
