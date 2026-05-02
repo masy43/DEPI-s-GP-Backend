@@ -19,11 +19,20 @@ export const getProducts: RequestHandler = async (req, res) => {
       if (max_price !== undefined) variantFilter.some.price.lte = max_price;
     }
 
-    const where = {
-      product_name: search ? { contains: search, mode: "insensitive" as any } : undefined,
+    const where: any = {
       category: category ? { category_name: { equals: category, mode: "insensitive" as any } } : undefined,
       variants: variantFilter,
     };
+
+    if (search) {
+      const searchWords = search.trim().split(/\s+/).filter(Boolean);
+      if (searchWords.length > 0) {
+        // ده هيخلي البحث يشتغل بأي كلمة من الكلمات اللي اليوزر كتبها
+        where.OR = searchWords.map(word => ({
+          product_name: { contains: word, mode: "insensitive" }
+        }));
+      }
+    }
 
     const total = await prisma.product.count({ where });
 
